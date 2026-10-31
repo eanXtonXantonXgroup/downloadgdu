@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#080d16">
+  <title>GDU — Game Device Utility</title>
+  <style>
+    :root{--bg:#080d16;--panel:#152234;--panel2:#1b2b40;--line:#2b3b50;--teal:#37c8c3;--muted:#91a1b7;--white:#f3f6fb;--danger:#ff7777}
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--white);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;min-height:100vh}
+    button,input{font:inherit}
+    .topbar{height:58px;display:flex;align-items:center;justify-content:flex-start;padding:0 max(22px,calc((100% - 980px)/2));position:sticky;top:0;background:#080d16eF;backdrop-filter:blur(12px);z-index:5}
+    .online{display:flex;align-items:center;gap:9px;color:#c2ccda;font-size:13px;letter-spacing:.4px}
+    .people{width:25px;height:25px;border:1.6px solid var(--teal);border-radius:8px;position:relative;display:inline-block}
+    .people:before{content:"";position:absolute;width:6px;height:6px;border:1.5px solid var(--teal);border-radius:50%;top:4px;left:8px}
+    .people:after{content:"";position:absolute;width:12px;height:6px;border:1.5px solid var(--teal);border-bottom:0;border-radius:9px 9px 0 0;left:5px;bottom:4px}
+    main{width:min(100% - 38px,900px);margin:0 auto;padding:38px 0 70px}
+    .brand{display:flex;align-items:center;gap:23px;margin:25px 0 58px}
+    .logo{width:100px;height:100px;border-radius:27px;background:linear-gradient(145deg,#16aaa8,#07918f);display:grid;place-items:center;font-family:Georgia,serif;font-size:58px;font-weight:900;color:#f7ffff;box-shadow:0 12px 32px #00aaa322}
+    .brand h1{font-family:Georgia,serif;font-size:39px;letter-spacing:-1.5px;margin:0 0 8px}
+    .brand p{margin:0;color:var(--muted);letter-spacing:5px;font-size:12px;font-weight:700}
+    .eyebrow{font-size:15px;letter-spacing:3px;color:#aab6c7;font-weight:800;margin:0 0 22px}
+    .panel{background:var(--panel);border:1px solid var(--line);border-radius:30px;padding:30px;box-shadow:0 14px 40px #0002}
+    .description{font-size:16px;line-height:1.8;color:#c4cfde;margin:0 0 25px}
+    .description strong{color:#fff}
+    .features{display:grid;grid-template-columns:repeat(3,1fr);gap:13px;margin:24px 0 30px}
+    .feature{background:#1b2b3e;border:1px solid #2b3d52;border-radius:18px;padding:18px 16px}
+    .feature-icon{width:38px;height:38px;border-radius:12px;background:#20384a;color:var(--teal);display:grid;place-items:center;font-size:19px;margin-bottom:13px}
+    .feature b{display:block;font-size:13px;margin-bottom:5px}
+    .feature span{font-size:12px;color:var(--muted);line-height:1.5}
+    .actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+    .download{border:0;border-radius:14px;background:var(--teal);color:#062020;padding:15px 23px;font-weight:850;cursor:pointer;min-width:190px;transition:.2s}
+    .download:hover{filter:brightness(1.08);transform:translateY(-1px)}
+    .download:disabled{opacity:.45;cursor:not-allowed;transform:none}
+    .count{border:1px solid var(--line);background:#101b2a;border-radius:14px;padding:13px 18px;min-width:150px}
+    .count strong{font-size:20px;color:var(--teal);display:block}
+    .count small{font-size:11px;color:var(--muted);letter-spacing:1.3px}
+    .note{font-size:12px;color:#8192a8;margin:16px 0 0;line-height:1.6}
+    footer{text-align:center;color:#6f8097;font-size:12px;margin-top:38px;letter-spacing:.7px}
+    .modal-backdrop{position:fixed;inset:0;background:#02050bd9;display:none;align-items:center;justify-content:center;padding:18px;z-index:10}
+    .modal-backdrop.show{display:flex}
+    .modal{width:min(100%,430px);background:#142235;border:1px solid #31445d;border-radius:25px;padding:25px;box-shadow:0 25px 80px #0009}
+    .modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+    .modal h2{font-size:23px;margin:0}
+    .close{background:#203148;border:0;color:#dce6f3;width:34px;height:34px;border-radius:10px;cursor:pointer;font-size:20px}
+    .modal-sub{color:var(--muted);font-size:13px;margin:0 0 20px;line-height:1.6}
+    .tabs{display:flex;background:#0d1725;padding:4px;border-radius:12px;margin-bottom:18px}
+    .tab{flex:1;border:0;background:transparent;color:#91a1b7;padding:10px;border-radius:9px;cursor:pointer;font-weight:700}
+    .tab.active{background:#24384d;color:var(--teal)}
+    label{display:block;font-size:12px;color:#aebbd0;margin:13px 0 7px}
+    input{width:100%;border:1px solid #34475e;background:#0c1725;color:white;border-radius:12px;padding:13px 14px;outline:none}
+    input:focus{border-color:var(--teal);box-shadow:0 0 0 3px #37c8c322}
+    .submit{width:100%;margin-top:20px;border:0;border-radius:12px;padding:14px;background:var(--teal);color:#062020;font-weight:850;cursor:pointer}
+    .status{min-height:20px;color:#ffaaaa;font-size:12px;margin:12px 0 0;line-height:1.5}
+    .account{display:none;align-items:center;gap:12px;margin-left:auto;color:#c5d1df;font-size:13px}
+    .avatar{width:30px;height:30px;border-radius:10px;background:#1d3947;border:1px solid #2d7778;display:grid;place-items:center;color:var(--teal);font-weight:800}
+    .logout{background:transparent;border:1px solid #35475c;color:#aab8ca;border-radius:9px;padding:7px 10px;cursor:pointer;font-size:12px}
+    @media(max-width:600px){main{padding-top:20px}.brand{gap:16px;margin:18px 0 44px}.logo{width:78px;height:78px;border-radius:23px;font-size:47px}.brand h1{font-size:32px}.brand p{font-size:9px;letter-spacing:3px}.panel{padding:22px;border-radius:24px}.features{grid-template-columns:1fr}.feature{display:flex;align-items:center;gap:13px;padding:13px}.feature-icon{margin:0;flex:none}.feature b{margin-bottom:3px}.actions{align-items:stretch}.download{flex:1}.count{min-width:130px}.topbar{padding:0 19px}}
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="online"><span class="people" aria-hidden="true"></span><span><b id="onlineCount">—</b> online</span></div>
+    <div class="account" id="accountBox"><span class="avatar">G</span><span id="accountName">User</span><button class="logout" id="logoutBtn">Logout</button></div>
+  </header>
+
+  <main>
+    <section class="brand">
+      <div class="logo">G</div>
+      <div><h1>GDU</h1><p>GAME DEVICE UTILITY</p></div>
+    </section>
+
+    <h2 class="eyebrow">WELCOME TO GDU</h2>
+    <section class="panel">
+      <p class="description"><strong>GDU (Game Device Utility)</strong> is a utility developed to help improve device performance and provide a more stable gaming experience for selected games, such as <strong>Free Fire, PUBG, Genshin Impact, and Zalith Launcher 2</strong>. Support for Minecraft Java requires <strong>Zalith Launcher 2 / Plus</strong>.</p>
+      <div class="features">
+        <div class="feature"><div class="feature-icon">▦</div><div><b>Device Utility</b><span>Tools focused on gaming-device performance.</span></div></div>
+        <div class="feature"><div class="feature-icon">⌘</div><div><b>Game Focus</b><span>Designed for selected games and launchers.</span></div></div>
+        <div class="feature"><div class="feature-icon">◇</div><div><b>Simple Access</b><span>Download the GDU package from this page.</span></div></div>
+      </div>
+      <div class="actions">
+        <button class="download" id="downloadBtn">DOWNLOAD GDU APK</button>
+        <div class="count"><strong id="downloadCount">—</strong><small>TOTAL DOWNLOADS</small></div>
+      </div>
+      <p class="note">You need to sign in or create an account before downloading. Your account stays available on this device and other devices when you sign in again.</p>
+    </section>
+    <footer>GDU · GAME DEVICE UTILITY</footer>
+  </main>
+
+  <div class="modal-backdrop" id="authBackdrop">
+    <section class="modal" role="dialog" aria-modal="true" aria-labelledby="authTitle">
+      <div class="modal-head"><h2 id="authTitle">Welcome</h2><button class="close" id="closeModal" aria-label="Close">×</button></div>
+      <p class="modal-sub">Sign in or create your GDU account to continue downloading.</p>
+      <div class="tabs"><button class="tab active" id="loginTab">Login</button><button class="tab" id="registerTab">Register</button></div>
+      <form id="authForm">
+        <label for="username">Username</label><input id="username" autocomplete="username" minlength="3" maxlength="24" required placeholder="Your username">
+        <label for="password">Password</label><input id="password" type="password" autocomplete="current-password" minlength="6" required placeholder="At least 6 characters">
+        <div id="confirmWrap" hidden><label for="confirmPassword">Confirm password</label><input id="confirmPassword" type="password" autocomplete="new-password" minlength="6" placeholder="Repeat your password"></div>
+        <button class="submit" id="submitAuth" type="submit">LOGIN</button>
+        <p class="status" id="authStatus" aria-live="polite"></p>
+      </form>
+    </section>
+  </div>
+
+  <!-- Firebase setup: replace the placeholder values below with your Firebase Web App config. -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyCcdF3xuSrNtp2WwOWOTk1S02Rpf8eU--w",
+      authDomain: "anton-bf3fb.firebaseapp.com",
+      projectId: "anton-bf3fb",
+      storageBucket: "anton-bf3fb.firebasestorage.app",
+      messagingSenderId: "90227092194",
+      appId: "1:90227092194:web:7e2295c5ead9288f154cbb",
+      measurementId: "G-HBWPHQKT9B",
+      databaseURL: "ISI_URL_REALTIME_DATABASE_DI_SINI"
+    };
+
+    const $ = id => document.getElementById(id);
+    const backdrop = $("authBackdrop");
+    let mode = "login";
+    let pendingDownload = false;
+    let auth, db, rtdb, firebaseReady = false;
+    let presenceRef = null;
+
+    function showAuth(nextDownload = false) {
+      pendingDownload = nextDownload;
+      backdrop.classList.add("show");
+      $("authStatus").textContent = "";
+    }
+    function hideAuth(){backdrop.classList.remove("show")}
+    function setMode(next){
+      mode = next;
+      $("loginTab").classList.toggle("active", mode === "login");
+      $("registerTab").classList.toggle("active", mode === "register");
+      $("confirmWrap").hidden = mode !== "register";
+      $("confirmPassword").required = mode === "register";
+      $("submitAuth").textContent = mode === "login" ? "LOGIN" : "CREATE ACCOUNT";
+      $("authTitle").textContent = mode === "login" ? "Welcome back" : "Create account";
+      $("password").autocomplete = mode === "login" ? "current-password" : "new-password";
+      $("authStatus").textContent = "";
+    }
+    function usernameEmail(name){
+      // Username is used as a login ID; Firebase Auth stores the credential securely.
+      return name.trim().toLowerCase().replace(/[^a-z0-9._-]/g,"") + "@gdu-user.invalid";
+    }
+    function requireFirebase(){
+      if(!firebaseReady) throw new Error("Website backend belum disiapkan. Admin perlu mengisi Firebase config terlebih dahulu.");
+    }
+    function updateDownloadCount(){
+      db.collection("gdu").doc("stats").onSnapshot(doc => {
+        $("downloadCount").textContent = doc.exists ? (doc.data().downloads || 0).toLocaleString("en-US") : "0";
+      }, err => console.error("Download counter:",err));
+    }
+    function startPresence(){
+      // One temporary presence entry per open browser tab; removed on disconnect.
+      presenceRef = rtdb.ref("presence").push();
+      const connectedRef = rtdb.ref(".info/connected");
+      connectedRef.on("value", snap => {
+        if(snap.val() === true && presenceRef){
+          presenceRef.onDisconnect().remove().then(() => presenceRef.set(true)).catch(console.error);
+        }
+      });
+    }
+    function watchOnline(){
+      rtdb.ref("presence").on("value", snap => {
+        $("onlineCount").textContent = snap.numChildren().toLocaleString("en-US");
+      }, err => console.error("Presence:",err));
+    }
+    async function doDownload(){
+      requireFirebase();
+      const user = auth.currentUser;
+      if(!user){showAuth(true);return}
+      const stats = db.collection("gdu").doc("stats");
+      await db.runTransaction(async tx => {
+        const snap = await tx.get(stats);
+        tx.set(stats,{downloads:(snap.exists ? (snap.data().downloads || 0) : 0)+1},{merge:true});
+      });
+      // Keep gdu (noroot)_3.2.apk in the same published folder as index.html.
+      const a = document.createElement("a");
+      a.href = new URL("./gdu (noroot)_3.2.apk", location.href).href;
+      a.download = "gdu (noroot)_3.2.apk";
+      document.body.appendChild(a); a.click(); a.remove();
+    }
+
+    $("downloadBtn").addEventListener("click", async () => {
+      try {
+        requireFirebase();
+        if(!auth.currentUser){showAuth(true);return}
+        await doDownload();
+      } catch(e){alert(e.message || "Download gagal. Coba lagi.")}
+    });
+    $("loginTab").onclick = () => setMode("login");
+    $("registerTab").onclick = () => setMode("register");
+    $("closeModal").onclick = hideAuth;
+    backdrop.addEventListener("click",e=>{if(e.target===backdrop)hideAuth()});
+    $("logoutBtn").onclick = async () => {if(auth) await auth.signOut()};
+
+    $("authForm").addEventListener("submit", async e => {
+      e.preventDefault();
+      $("authStatus").textContent = "";
+      const username = $("username").value.trim();
+      const password = $("password").value;
+      if(!/^[a-zA-Z0-9._-]{3,24}$/.test(username)){
+        $("authStatus").textContent = "Username: 3–24 karakter, gunakan huruf, angka, titik, _ atau -.";return;
+      }
+      if(mode === "register" && password !== $("confirmPassword").value){
+        $("authStatus").textContent = "Konfirmasi password tidak sama.";return;
+      }
+      try{
+        requireFirebase();
+        $("submitAuth").disabled = true;
+        if(mode === "register"){
+          const cred = await auth.createUserWithEmailAndPassword(usernameEmail(username),password);
+          await db.collection("users").doc(cred.user.uid).set({username,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+        }else{
+          const cred = await auth.signInWithEmailAndPassword(usernameEmail(username),password);
+          const userDoc = await db.collection("users").doc(cred.user.uid).get();
+          if(!userDoc.exists || userDoc.data().username.toLowerCase() !== username.toLowerCase()){
+            await auth.signOut(); throw new Error("Username tidak ditemukan.");
+          }
+        }
+        hideAuth();
+        if(pendingDownload){pendingDownload=false;await doDownload()}
+      }catch(err){
+        let msg = err.message || "Tidak dapat memproses akun.";
+        if(err.code==="auth/email-already-in-use") msg="Username sudah digunakan.";
+        if(err.code==="auth/invalid-credential" || err.code==="auth/wrong-password" || err.code==="auth/user-not-found") msg="Username atau password salah.";
+        if(err.code==="auth/weak-password") msg="Password minimal 6 karakter.";
+        if(err.code==="auth/network-request-failed") msg="Koneksi internet bermasalah.";
+        $("authStatus").textContent=msg;
+      }finally{$("submitAuth").disabled=false}
+    });
+
+    try{
+      const configured = firebaseConfig.apiKey !== "PASTE_API_KEY" &&
+        firebaseConfig.projectId !== "PASTE_PROJECT_ID" && firebaseConfig.appId !== "PASTE_APP_ID";
+      if(configured){
+        firebase.initializeApp(firebaseConfig);
+        auth=firebase.auth(); db=firebase.firestore(); rtdb=firebase.database();
+        firebaseReady=true;
+        updateDownloadCount(); watchOnline();
+        startPresence();
+        auth.onAuthStateChanged(async user=>{
+          $("accountBox").style.display=user?"flex":"none";
+          if(user){
+            const profile = await db.collection("users").doc(user.uid).get().catch(()=>null);
+            $("accountName").textContent = profile && profile.exists ? profile.data().username : "User";
+          } else {
+            $("accountName").textContent = "";
+          }
+        });
+      }else{
+        $("downloadCount").textContent="—";
+        $("onlineCount").textContent="—";
+      }
+    }catch(err){console.error(err)}
+  </script>
+</body>
+</html>
